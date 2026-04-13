@@ -1,0 +1,212 @@
+<div class="contenedor-sistema">
+
+  <!-- SIDEBAR -->
+  <nav class="barra-lateral" [class.colapsada]="barraColapsada">
+    <div class="logo-sidebar">
+      <img
+        src="assets/JeyRich.png"
+        alt="JeyRich Logo"
+        class="logo-img"
+      />
+      <span class="logo-texto">JeyRich</span>
+    </div>
+
+    <ul class="menu-nav">
+      <li class="menu-item" [class.activo]="seccionActiva === 'dashboard'" (click)="navegarA('dashboard')">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </li>
+      <li class="menu-item" [class.activo]="seccionActiva === 'ventas'" (click)="navegarA('ventas')">
+        <i class="bi bi-cart3"></i>
+        <span>Ventas</span>
+      </li>
+      <li class="menu-item" [class.activo]="seccionActiva === 'productos'" (click)="navegarA('productos')">
+        <i class="bi bi-box-seam"></i>
+        <span>Productos</span>
+      </li>
+      <li class="menu-item" [class.activo]="seccionActiva === 'proveedores'" (click)="navegarA('proveedores')">
+        <i class="bi bi-truck"></i>
+        <span>Proveedores</span>
+      </li>
+      <li class="menu-item" [class.activo]="seccionActiva === 'usuarios'" (click)="navegarA('usuarios')" *ngIf="esAdmin">
+        <i class="bi bi-people"></i>
+        <span>Usuarios</span>
+      </li>
+      <li class="menu-item" [class.activo]="seccionActiva === 'reportes'" (click)="navegarA('reportes')">
+        <i class="bi bi-bar-chart-line"></i>
+        <span>Reportes</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="info-usuario">
+        <div class="avatar-usuario">{{ iniciales }}</div>
+        <div class="datos-usuario">
+          <span class="nombre-usuario">{{ nombreUsuario }}</span>
+          <span class="rol-usuario">{{ rolUsuario }}</span>
+        </div>
+      </div>
+      <button class="btn-cerrar-sesion" (click)="cerrarSesion()" title="Cerrar sesión">
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="contenido-principal">
+
+    <!-- TOPBAR -->
+    <header class="barra-superior">
+      <div class="topbar-izquierda">
+        <button class="btn-colapsar" (click)="toggleBarra()">
+          <i class="bi bi-list"></i>
+        </button>
+        <div class="ruta-pagina">
+          <span class="ruta-home">JeyRich</span>
+          <i class="bi bi-chevron-right ruta-separador"></i>
+          <span class="ruta-actual">{{ tituloPagina }}</span>
+        </div>
+      </div>
+      <div class="topbar-derecha">
+        <div class="fecha-hora">
+          <i class="bi bi-calendar3 me-1"></i>
+          {{ fechaHoy }}
+        </div>
+        <div class="badge-notif" title="Alertas de stock">
+          <i class="bi bi-bell"></i>
+          <span class="notif-count" *ngIf="alertasStock > 0">{{ alertasStock }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CUERPO DEL DASHBOARD -->
+    <div class="cuerpo-dashboard">
+
+      <!-- Saludo -->
+      <div class="saludo-seccion mb-4">
+        <h2 class="titulo-saludo">{{ saludo }}, <strong>{{ nombreUsuario }}</strong> 👋</h2>
+        <p class="subtitulo-saludo">Aquí tienes el resumen del sistema hoy</p>
+      </div>
+
+      <!-- TARJETAS MÉTRICAS -->
+      <div class="fila-metricas">
+
+        <div class="tarjeta-metrica tarjeta-ventas">
+          <div class="metrica-icono">
+            <i class="bi bi-cart-check"></i>
+          </div>
+          <div class="metrica-info">
+            <span class="metrica-valor">{{ totalVentasHoy }}</span>
+            <span class="metrica-etiqueta">Ventas hoy</span>
+          </div>
+          <div class="metrica-tendencia tendencia-up">
+            <i class="bi bi-arrow-up-short"></i>
+          </div>
+        </div>
+
+        <div class="tarjeta-metrica tarjeta-ingresos">
+          <div class="metrica-icono">
+            <i class="bi bi-cash-coin"></i>
+          </div>
+          <div class="metrica-info">
+            <span class="metrica-valor">Bs. {{ totalIngresosHoy | number:'1.2-2' }}</span>
+            <span class="metrica-etiqueta">Ingresos hoy</span>
+          </div>
+          <div class="metrica-tendencia tendencia-up">
+            <i class="bi bi-arrow-up-short"></i>
+          </div>
+        </div>
+
+        <div class="tarjeta-metrica tarjeta-productos">
+          <div class="metrica-icono">
+            <i class="bi bi-boxes"></i>
+          </div>
+          <div class="metrica-info">
+            <span class="metrica-valor">{{ totalProductos }}</span>
+            <span class="metrica-etiqueta">Productos activos</span>
+          </div>
+        </div>
+
+        <div class="tarjeta-metrica tarjeta-alertas" [class.con-alertas]="alertasStock > 0">
+          <div class="metrica-icono">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+          <div class="metrica-info">
+            <span class="metrica-valor">{{ alertasStock }}</span>
+            <span class="metrica-etiqueta">Stock bajo</span>
+          </div>
+          <div class="metrica-tendencia tendencia-down" *ngIf="alertasStock > 0">
+            <i class="bi bi-arrow-down-short"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FILA INFERIOR -->
+      <div class="fila-inferior">
+
+        <!-- Accesos rápidos -->
+        <div class="card-panel accesos-rapidos">
+          <h3 class="panel-titulo">
+            <i class="bi bi-lightning-charge me-2"></i>Accesos rápidos
+          </h3>
+          <div class="grid-accesos">
+            <button class="btn-acceso" (click)="navegarA('ventas')">
+              <i class="bi bi-plus-circle"></i>
+              <span>Nueva venta</span>
+            </button>
+            <button class="btn-acceso" (click)="navegarA('productos')">
+              <i class="bi bi-box-seam"></i>
+              <span>Ver productos</span>
+            </button>
+            <button class="btn-acceso" (click)="navegarA('proveedores')">
+              <i class="bi bi-truck"></i>
+              <span>Proveedores</span>
+            </button>
+            <button class="btn-acceso" (click)="navegarA('reportes')">
+              <i class="bi bi-file-earmark-bar-graph"></i>
+              <span>Reportes</span>
+            </button>
+            <button class="btn-acceso" (click)="navegarA('usuarios')" *ngIf="esAdmin">
+              <i class="bi bi-person-plus"></i>
+              <span>Nuevo usuario</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Info del sistema -->
+        <div class="card-panel info-sistema">
+          <h3 class="panel-titulo">
+            <i class="bi bi-info-circle me-2"></i>Estado del sistema
+          </h3>
+          <ul class="lista-estado">
+            <li class="estado-item">
+              <span class="estado-label">Base de datos</span>
+              <span class="badge-estado badge-ok">
+                <i class="bi bi-circle-fill me-1"></i>Conectada
+              </span>
+            </li>
+            <li class="estado-item">
+              <span class="estado-label">Usuario activo</span>
+              <span class="estado-valor">{{ nombreUsuario }}</span>
+            </li>
+            <li class="estado-item">
+              <span class="estado-label">Rol</span>
+              <span class="estado-valor">{{ rolUsuario }}</span>
+            </li>
+            <li class="estado-item">
+              <span class="estado-label">Último acceso</span>
+              <span class="estado-valor">{{ fechaHoy }}</span>
+            </li>
+            <li class="estado-item">
+              <span class="estado-label">Versión</span>
+              <span class="estado-valor">JeyRich v1.0.0</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+</div>
