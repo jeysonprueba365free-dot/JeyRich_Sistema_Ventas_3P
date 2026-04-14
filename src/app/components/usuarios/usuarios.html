@@ -1,0 +1,281 @@
+<div class="contenedor-usuarios">
+  <div class="toast-container" *ngIf="toastVisible">
+    <div class="toast-notif" [class.toast-exito]="toastTipo === 'exito'" [class.toast-error]="toastTipo === 'error'">
+      <div class="toast-icono">
+        <i class="bi" [class.bi-check-circle-fill]="toastTipo === 'exito'" [class.bi-x-circle-fill]="toastTipo === 'error'"></i>
+      </div>
+      <span class="toast-texto">{{ toastMensaje }}</span>
+      <button class="toast-cerrar" (click)="cerrarToast()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+  <div class="encabezado-modulo">
+    <div class="left-header">
+      <button class="btn-volver" (click)="location.back()" title="Volver">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/>
+          <path d="M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <div class="divisor-header"></div>
+      <div>
+        <h2 class="titulo-modulo">
+          <i class="bi bi-people-fill me-2"></i>Gestión de Usuarios
+        </h2>
+        <p class="subtitulo-modulo">Administra los usuarios del sistema</p>
+      </div>
+    </div>
+    <button class="btn-nuevo" (click)="abrirModalCrear()">
+      <i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario
+    </button>
+  </div>
+  <div class="barra-filtros">
+    <div class="campo-busqueda">
+      <i class="bi bi-search"></i>
+      <input type="text" placeholder="Buscar por nombre, usuario o correo..."
+        [(ngModel)]="textoBusqueda" (input)="filtrarUsuarios()" />
+    </div>
+    <div class="filtros-grupo">
+      <select [(ngModel)]="filtroRol" (change)="filtrarUsuarios()" class="select-filtro">
+        <option value="">Todos los roles</option>
+        <option value="administrador">Administrador</option>
+        <option value="vendedor">Vendedor</option>
+        <option value="almacenero">Almacenero</option>
+      </select>
+      <select [(ngModel)]="filtroEstado" (change)="filtrarUsuarios()" class="select-filtro">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activos</option>
+        <option value="inactivo">Inactivos</option>
+      </select>
+    </div>
+  </div>
+  <div class="fila-resumen">
+    <div class="chip-resumen">
+      <i class="bi bi-people"></i>
+      <span>Total: <strong>{{ totalUsuarios }}</strong></span>
+    </div>
+    <div class="chip-resumen chip-activo">
+      <i class="bi bi-check-circle"></i>
+      <span>Activos: <strong>{{ usuariosActivos }}</strong></span>
+    </div>
+    <div class="chip-resumen chip-inactivo">
+      <i class="bi bi-x-circle"></i>
+      <span>Inactivos: <strong>{{ usuariosInactivos }}</strong></span>
+    </div>
+  </div>
+  <div class="tabla-contenedor">
+    <div *ngIf="cargando" class="estado-carga">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p>Cargando usuarios...</p>
+    </div>
+    <div *ngIf="!cargando && usuariosFiltrados.length === 0" class="estado-vacio">
+      <i class="bi bi-person-x"></i>
+      <p>No se encontraron usuarios</p>
+    </div>
+    <table class="tabla-usuarios" *ngIf="!cargando && usuariosFiltrados.length > 0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Usuario</th>
+          <th>Nombre Completo</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Fecha Creación</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let usuario of usuariosFiltrados; let i = index"
+            [class.fila-inactiva]="!usuario.activo">
+          <td class="col-id">{{ i + 1 }}</td>
+          <td class="col-usuario">
+            <div class="celda-usuario">
+              <div class="avatar-tabla" [class]="'avatar-' + usuario.rol">
+                {{ obtenerIniciales(usuario.nombreCompleto) }}
+              </div>
+              <span>{{ usuario.nombreUsuario }}</span>
+            </div>
+          </td>
+          <td>{{ usuario.nombreCompleto }}</td>
+          <td class="col-correo">{{ usuario.correo }}</td>
+          <td>
+            <span class="badge-rol" [class]="'badge-' + usuario.rol">
+              {{ formatearRol(usuario.rol) }}
+            </span>
+          </td>
+          <td>
+            <span class="badge-estado"
+              [class.badge-activo]="usuario.activo"
+              [class.badge-inactivo]="!usuario.activo">
+              <i class="bi"
+                [class.bi-check-circle-fill]="usuario.activo"
+                [class.bi-x-circle-fill]="!usuario.activo"></i>
+              {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="col-fecha">{{ usuario.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+          <td class="col-acciones">
+            <button class="btn-accion btn-editar"
+                    (click)="abrirModalEditar(usuario)"
+                    title="Editar usuario">
+              <i class="bi bi-pencil-fill"></i>
+              <span>Editar</span>
+            </button>
+            <button class="btn-accion"
+                    [class.btn-activar]="!usuario.activo"
+                    [class.btn-desactivar]="usuario.activo"
+                    (click)="toggleEstado(usuario)"
+                    [title]="usuario.activo ? 'Desactivar' : 'Activar'">
+              <i class="bi"
+                [class.bi-toggle-on]="usuario.activo"
+                [class.bi-toggle-off]="!usuario.activo"></i>
+              <span>{{ usuario.activo ? 'Desactivar' : 'Activar' }}</span>
+            </button>
+            <button class="btn-accion btn-eliminar"
+                    (click)="confirmarEliminar(usuario)"
+                    title="Eliminar usuario"
+                    [disabled]="usuario.nombreUsuario === usuarioActual">
+              <i class="bi bi-trash3-fill"></i>
+              <span>Eliminar</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="overlay-modal" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-formulario" (click)="$event.stopPropagation()">
+      <div class="modal-encabezado">
+        <h3>
+          <i class="bi"
+            [class.bi-person-plus-fill]="!usuarioEditando"
+            [class.bi-pencil-fill]="usuarioEditando"></i>
+          {{ usuarioEditando ? 'Editar Usuario' : 'Nuevo Usuario' }}
+        </h3>
+        <button class="btn-cerrar-modal" (click)="cerrarModal()" title="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <form (ngSubmit)="guardarUsuario()" #formulario="ngForm" novalidate>
+        <div class="modal-cuerpo">
+          <div class="fila-campos">
+            <div class="grupo-campo">
+              <label>Nombre Completo *</label>
+              <input type="text" [(ngModel)]="formularioUsuario.nombreCompleto"
+                name="nombreCompleto" placeholder="Ej: Juan Pérez" required
+                #campoNombre="ngModel"
+                [class.campo-error]="campoNombre.invalid && campoNombre.touched" />
+              <span class="texto-error" *ngIf="campoNombre.invalid && campoNombre.touched">Requerido</span>
+            </div>
+            <div class="grupo-campo">
+              <label>Usuario *</label>
+              <input type="text" [(ngModel)]="formularioUsuario.nombreUsuario"
+                name="nombreUsuario" placeholder="Ej: jperez" required minlength="3"
+                #campoUsuario="ngModel"
+                [class.campo-error]="campoUsuario.invalid && campoUsuario.touched"
+                [disabled]="!!usuarioEditando" />
+              <span class="texto-error" *ngIf="campoUsuario.invalid && campoUsuario.touched">Mínimo 3 caracteres</span>
+            </div>
+          </div>
+          <div class="fila-campos">
+            <div class="grupo-campo">
+              <label>Correo Electrónico *</label>
+              <input type="email" [(ngModel)]="formularioUsuario.correo"
+                name="correo" placeholder="correo@ejemplo.com" required email
+                #campoCorreo="ngModel"
+                [class.campo-error]="campoCorreo.invalid && campoCorreo.touched" />
+              <span class="texto-error" *ngIf="campoCorreo.invalid && campoCorreo.touched">Correo inválido</span>
+            </div>
+            <div class="grupo-campo">
+              <label>Rol *</label>
+              <select [(ngModel)]="formularioUsuario.rol" name="rol" required>
+                <option value="">Seleccionar rol...</option>
+                <option value="administrador">Administrador</option>
+                <option value="vendedor">Vendedor</option>
+                <option value="almacenero">Almacenero</option>
+              </select>
+            </div>
+          </div>
+          <div class="fila-campos">
+            <div class="grupo-campo">
+              <label>{{ usuarioEditando ? 'Nueva Contraseña (dejar vacío para mantener)' : 'Contraseña *' }}</label>
+              <div class="input-con-ojo">
+                <input [type]="mostrarContrasena ? 'text' : 'password'"
+                  [(ngModel)]="formularioUsuario.contrasena" name="contrasena"
+                  placeholder="Mínimo 6 caracteres" [required]="!usuarioEditando" minlength="6"
+                  #campoClave="ngModel"
+                  [class.campo-error]="campoClave.invalid && campoClave.touched" />
+                <button type="button" (click)="mostrarContrasena = !mostrarContrasena">
+                  <i class="bi"
+                    [class.bi-eye]="!mostrarContrasena"
+                    [class.bi-eye-slash]="mostrarContrasena"></i>
+                </button>
+              </div>
+              <span class="texto-error" *ngIf="campoClave.invalid && campoClave.touched">Mínimo 6 caracteres</span>
+            </div>
+            <div class="grupo-campo grupo-estado" *ngIf="usuarioEditando">
+              <label>Estado</label>
+              <label class="toggle-switch">
+                <input type="checkbox" [(ngModel)]="formularioUsuario.activo" name="activo" />
+                <span class="slider"></span>
+                <span class="toggle-label">{{ formularioUsuario.activo ? 'Activo' : 'Inactivo' }}</span>
+              </label>
+            </div>
+          </div>
+          <div class="alerta-modal alerta-cargando" *ngIf="guardando">
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            {{ usuarioEditando ? 'Actualizando usuario...' : 'Creando usuario...' }}
+          </div>
+          <div class="alerta-modal alerta-error" *ngIf="errorModal && !guardando">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorModal }}
+          </div>
+        </div>
+        <div class="modal-pie">
+          <button type="button" class="btn-cancelar" (click)="cerrarModal()" [disabled]="guardando">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-guardar" [disabled]="formulario.invalid || guardando">
+            <span class="spinner-border spinner-border-sm me-2" *ngIf="guardando"></span>
+            <i class="bi bi-check-lg me-1" *ngIf="!guardando"></i>
+            {{ guardando ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="overlay-modal" *ngIf="mostrarModalEliminar" (click)="cerrarModalEliminar()">
+    <div class="modal-confirmar" (click)="$event.stopPropagation()">
+      <div class="confirmar-icono">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <h3>¿Eliminar usuario?</h3>
+      <p>¿Estás seguro de eliminar a <strong>{{ usuarioAEliminar?.nombreCompleto }}</strong>?
+        Esta acción no se puede deshacer.</p>
+      <div class="alerta-modal alerta-cargando"
+           *ngIf="guardando"
+           style="margin-bottom: 16px; text-align: left;">
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Eliminando usuario...
+      </div>
+      <div class="confirmar-botones">
+        <button class="btn-cancelar" (click)="cerrarModalEliminar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button class="btn-eliminar-confirm" (click)="eliminarUsuario()" [disabled]="guardando">
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="guardando"></span>
+          <span *ngIf="!guardando">Sí, eliminar</span>
+          <span *ngIf="guardando">Eliminando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

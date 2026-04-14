@@ -1,6 +1,4 @@
 <div class="contenedor-sistema">
-
-  <!-- SIDEBAR -->
   <nav class="barra-lateral" [class.colapsada]="barraColapsada">
     <div class="logo-sidebar">
       <img
@@ -10,7 +8,6 @@
       />
       <span class="logo-texto">JeyRich</span>
     </div>
-
     <ul class="menu-nav">
       <li class="menu-item" [class.activo]="seccionActiva === 'dashboard'" (click)="navegarA('dashboard')">
         <i class="bi bi-speedometer2"></i>
@@ -37,7 +34,6 @@
         <span>Reportes</span>
       </li>
     </ul>
-
     <div class="sidebar-footer">
       <div class="info-usuario">
         <div class="avatar-usuario">{{ iniciales }}</div>
@@ -51,11 +47,7 @@
       </button>
     </div>
   </nav>
-
-  <!-- CONTENIDO PRINCIPAL -->
   <main class="contenido-principal">
-
-    <!-- TOPBAR -->
     <header class="barra-superior">
       <div class="topbar-izquierda">
         <button class="btn-colapsar" (click)="toggleBarra()">
@@ -78,19 +70,12 @@
         </div>
       </div>
     </header>
-
-    <!-- CUERPO DEL DASHBOARD -->
     <div class="cuerpo-dashboard">
-
-      <!-- Saludo -->
       <div class="saludo-seccion mb-4">
         <h2 class="titulo-saludo">{{ saludo }}, <strong>{{ nombreUsuario }}</strong> 👋</h2>
         <p class="subtitulo-saludo">Aquí tienes el resumen del sistema hoy</p>
       </div>
-
-      <!-- TARJETAS MÉTRICAS -->
       <div class="fila-metricas">
-
         <div class="tarjeta-metrica tarjeta-ventas">
           <div class="metrica-icono">
             <i class="bi bi-cart-check"></i>
@@ -103,7 +88,6 @@
             <i class="bi bi-arrow-up-short"></i>
           </div>
         </div>
-
         <div class="tarjeta-metrica tarjeta-ingresos">
           <div class="metrica-icono">
             <i class="bi bi-cash-coin"></i>
@@ -116,7 +100,6 @@
             <i class="bi bi-arrow-up-short"></i>
           </div>
         </div>
-
         <div class="tarjeta-metrica tarjeta-productos">
           <div class="metrica-icono">
             <i class="bi bi-boxes"></i>
@@ -126,7 +109,6 @@
             <span class="metrica-etiqueta">Productos activos</span>
           </div>
         </div>
-
         <div class="tarjeta-metrica tarjeta-alertas" [class.con-alertas]="alertasStock > 0">
           <div class="metrica-icono">
             <i class="bi bi-exclamation-triangle"></i>
@@ -139,13 +121,8 @@
             <i class="bi bi-arrow-down-short"></i>
           </div>
         </div>
-
       </div>
-
-      <!-- FILA INFERIOR -->
       <div class="fila-inferior">
-
-        <!-- Accesos rápidos -->
         <div class="card-panel accesos-rapidos">
           <h3 class="panel-titulo">
             <i class="bi bi-lightning-charge me-2"></i>Accesos rápidos
@@ -173,8 +150,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Info del sistema -->
         <div class="card-panel info-sistema">
           <h3 class="panel-titulo">
             <i class="bi bi-info-circle me-2"></i>Estado del sistema
@@ -204,9 +179,7 @@
             </li>
           </ul>
         </div>
-
       </div>
     </div>
   </main>
-
 </div>

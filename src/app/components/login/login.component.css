@@ -1,4 +1,3 @@
-/* ===== VARIABLES ===== */
 :root {
   --azul-oscuro: #020b18;
   --azul-medio: #041e42;
@@ -9,8 +8,6 @@
   --texto-suave: rgba(147, 197, 253, 0.8);
   --texto-tenue: rgba(180, 200, 255, 0.45);
 }
-
-/* ===== CONTENEDOR PRINCIPAL ===== */
 .contenedor-login {
   min-height: 100vh;
   display: flex;
@@ -23,21 +20,17 @@
   position: relative;
   overflow: hidden;
 }
-
-/* ===== CÍRCULOS DECORATIVOS ===== */
 .fondo-decorativo {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
 }
-
 .circulo {
   position: absolute;
   border-radius: 50%;
   opacity: 0.12;
 }
-
 .circulo-1 {
   width: 400px;
   height: 400px;
@@ -45,7 +38,6 @@
   top: -120px;
   right: -100px;
 }
-
 .circulo-2 {
   width: 300px;
   height: 300px;
@@ -53,7 +45,6 @@
   bottom: -80px;
   left: -80px;
 }
-
 .circulo-3 {
   width: 200px;
   height: 200px;
@@ -62,8 +53,6 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
-/* ===== TARJETA ===== */
 .tarjeta-login {
   width: 100%;
   max-width: 440px;
@@ -77,18 +66,14 @@
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5) !important;
   animation: aparecerTarjeta 0.5s ease-out;
 }
-
 @keyframes aparecerTarjeta {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-/* ===== LOGO ===== */
 .logo-wrapper {
   display: flex;
   justify-content: center;
 }
-
 .logo-icono {
   width: 56px;
   height: 56px;
@@ -101,8 +86,6 @@
   color: #fff;
   box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
 }
-
-/* ===== MARCA ===== */
 .marca-nombre {
   font-size: 28px !important;
   font-weight: 700 !important;
@@ -110,22 +93,17 @@
   letter-spacing: 0.5px;
   margin-bottom: 4px !important;
 }
-
 .marca-subtitulo {
   font-size: 13px;
   color: rgba(180, 200, 255, 0.5);
   letter-spacing: 0.3px;
   margin-bottom: 0;
 }
-
-/* ===== ALERTAS ===== */
 .alerta-login {
   border-radius: 10px !important;
   font-size: 13.5px;
   padding: 10px 14px !important;
 }
-
-/* ===== LABELS ===== */
 .etiqueta-campo {
   font-size: 11.5px !important;
   font-weight: 600 !important;
@@ -134,8 +112,6 @@
   letter-spacing: 0.8px;
   margin-bottom: 7px !important;
 }
-
-/* ===== INPUT GROUP (Bootstrap override) ===== */
 .input-grupo-personalizado {
   border-radius: 10px !important;
   overflow: hidden;
@@ -143,12 +119,10 @@
   transition: border-color 0.2s, box-shadow 0.2s;
   flex-wrap: nowrap !important;
 }
-
 .input-grupo-personalizado:focus-within {
   border-color: rgba(96, 165, 250, 0.65) !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
 }
-
 .input-grupo-personalizado .input-group-text,
 .icono-input {
   background: rgba(255, 255, 255, 0.05) !important;
@@ -158,7 +132,6 @@
   padding: 0 13px !important;
   font-size: 15px;
 }
-
 .input-grupo-personalizado .form-control,
 .campo-texto {
   background: rgba(255, 255, 255, 0.05) !important;
@@ -169,18 +142,14 @@
   font-family: 'Segoe UI', sans-serif;
   box-shadow: none !important;
 }
-
 .input-grupo-personalizado .form-control::placeholder {
   color: rgba(148, 163, 184, 0.4) !important;
 }
-
 .input-grupo-personalizado .form-control:focus {
   background: rgba(255, 255, 255, 0.08) !important;
   box-shadow: none !important;
   border: none !important;
 }
-
-/* ===== BOTÓN OJO ===== */
 .boton-ojo {
   background: rgba(255, 255, 255, 0.05) !important;
   border: none !important;
@@ -191,37 +160,29 @@
   transition: color 0.2s, background 0.2s;
   font-size: 15px;
 }
-
 .boton-ojo:hover {
   color: #93c5fd !important;
   background: rgba(255, 255, 255, 0.1) !important;
 }
-
 .boton-ojo:focus {
   box-shadow: none !important;
   outline: none !important;
 }
-
-/* ===== VALIDACIÓN ===== */
 .invalid-feedback {
   font-size: 12px !important;
   color: #f87171 !important;
   margin-top: 5px;
   padding-left: 2px;
 }
-
 .input-grupo-personalizado .form-control.is-invalid {
   border-bottom: 1px solid rgba(248, 113, 113, 0.5) !important;
 }
-
-/* ===== CHECKBOX ===== */
 .checkbox-personalizado {
   accent-color: #3b82f6;
   width: 15px !important;
   height: 15px !important;
   cursor: pointer;
 }
-
 .texto-recordar {
   font-size: 13px !important;
   color: rgba(180, 200, 255, 0.6) !important;
@@ -230,8 +191,6 @@
   letter-spacing: 0 !important;
   cursor: pointer;
 }
-
-/* ===== LINK OLVIDASTE ===== */
 .enlace-olvidaste {
   font-size: 13px !important;
   color: #60a5fa !important;
@@ -239,12 +198,9 @@
   text-decoration: none !important;
   transition: color 0.2s;
 }
-
 .enlace-olvidaste:hover {
   color: #93c5fd !important;
 }
-
-/* ===== BOTÓN INGRESAR ===== */
 .boton-ingresar {
   background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 60%, #1e40af 100%) !important;
   color: #fff !important;
@@ -257,34 +213,26 @@
   transition: opacity 0.2s, transform 0.15s !important;
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35) !important;
 }
-
 .boton-ingresar:hover:not(:disabled) {
   opacity: 0.9 !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 10px 28px rgba(37, 99, 235, 0.45) !important;
 }
-
 .boton-ingresar:active:not(:disabled) {
   transform: scale(0.99) !important;
 }
-
 .boton-ingresar:disabled {
   opacity: 0.45 !important;
   cursor: not-allowed !important;
 }
-
-/* ===== PIE DE TARJETA ===== */
 .texto-pie {
   font-size: 12px;
   color: rgba(148, 163, 184, 0.4);
 }
-
-/* ===== VERSIÓN ===== */
 .version-sistema {
   position: relative;
   z-index: 1;
 }
-
 .version-sistema small {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.18);
@@ -296,15 +244,12 @@
   filter: drop-shadow(0 4px 20px rgba(212, 175, 55, 0.4));
   transition: transform 0.3s ease;
 }
-
 .logo-imagen:hover {
   transform: scale(1.03);
 }
-
 .marca-nombre {
   display: none;
 }
-
 .marca-subtitulo {
   font-size: 13px;
   color: rgba(212, 175, 55, 0.65);

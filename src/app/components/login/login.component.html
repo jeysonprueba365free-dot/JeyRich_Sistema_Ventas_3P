@@ -1,13 +1,10 @@
 <div class="contenedor-login">
-  
   <div class="fondo-decorativo">
     <div class="circulo circulo-1"></div>
     <div class="circulo circulo-2"></div>
     <div class="circulo circulo-3"></div>
   </div>
-
   <div class="tarjeta-login shadow-lg">
-
     <div class="encabezado-login text-center mb-4">
       <div class="logo-wrapper mb-2">
         <img 
@@ -18,7 +15,6 @@
       </div>
       <p class="marca-subtitulo">Sistema de Gestión de Ventas</p>
     </div>
-
     <div
       *ngIf="mensajeError"
       class="alert alert-danger alerta-login d-flex align-items-center mb-4"
@@ -27,7 +23,6 @@
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
       <span>{{ mensajeError }}</span>
     </div>
-
     <div
       *ngIf="mensajeExito"
       class="alert alert-success alerta-login d-flex align-items-center mb-4"
@@ -36,9 +31,7 @@
       <i class="bi bi-check-circle-fill me-2"></i>
       <span>{{ mensajeExito }}</span>
     </div>
-
     <form (ngSubmit)="onSubmit()" #formularioLogin="ngForm" novalidate>
-
       <div class="mb-3 grupo-campo">
         <label for="nombreUsuario" class="form-label etiqueta-campo">
           <i class="bi bi-person-fill me-1"></i> Usuario
@@ -66,7 +59,6 @@
           </div>
         </div>
       </div>
-
       <div class="mb-4 grupo-campo">
         <label for="contrasena" class="form-label etiqueta-campo">
           <i class="bi bi-lock-fill me-1"></i> Contraseña
@@ -102,7 +94,6 @@
           </div>
         </div>
       </div>
-
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="form-check">
           <input
@@ -118,7 +109,6 @@
         </div>
         <a href="https://api.whatsapp.com/send?phone=79971448&text=JeyRich%20Soporte%20Tecnio,%20me%20podrian%20ayudar!" class="enlace-olvidaste">Contactate con Soporte</a>
       </div>
-
       <button
         type="submit"
         class="btn boton-ingresar w-100 mb-3"
@@ -132,20 +122,15 @@
           Verificando...
         </span>
       </button>
-
     </form>
-
     <div class="pie-tarjeta text-center mt-3">
       <small class="texto-pie">
         <i class="bi bi-shield-lock me-1"></i>
         Acceso restringido · Solo personal autorizado
       </small>
     </div>
-
   </div>
-
   <div class="version-sistema text-center mt-3">
     <small>JeyRich v1.0.0 &copy; {{ anioActual }}</small>
   </div>
-
 </div>
