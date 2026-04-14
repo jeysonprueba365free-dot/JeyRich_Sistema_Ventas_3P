@@ -16,18 +16,18 @@ export class AutenticacionService {
       this.usuarioActual = JSON.parse(sesionGuardada);
     }
   }
-  async iniciarSesion(nombreUsuario: string, contrasena: string): Promise<boolean> {
-    const usuario = await this.bd.autenticarUsuario(nombreUsuario, contrasena);
-    if (usuario) {
-      this.usuarioActual = usuario;
-      sessionStorage.setItem(CLAVE_SESION, JSON.stringify(usuario));
-      if (usuario.id) {
-        await this.bd.actualizarUltimoAcceso(usuario.id);
-      }
-      return true;
+  async iniciarSesion(nombreUsuario: string, contrasena: string): Promise<{ exito: boolean, deshabilitado?: boolean }> {
+  const resultado = await this.bd.autenticarUsuario(nombreUsuario, contrasena);
+  if (resultado.usuario) {
+    this.usuarioActual = resultado.usuario;
+    sessionStorage.setItem(CLAVE_SESION, JSON.stringify(resultado.usuario));
+    if (resultado.usuario.id) {
+      await this.bd.actualizarUltimoAcceso(resultado.usuario.id);
     }
-    return false;
+    return { exito: true };
   }
+  return { exito: false, deshabilitado: resultado.deshabilitado };
+}
   cerrarSesion(): void {
     this.usuarioActual = null;
     sessionStorage.removeItem(CLAVE_SESION);

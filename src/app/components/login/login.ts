@@ -36,36 +36,39 @@ export class LoginComponent implements OnInit {
     }
   }
   async onSubmit(): Promise<void> {
-    this.mensajeError = '';
-    this.mensajeExito = '';
-    if (!this.credenciales.nombreUsuario || !this.credenciales.contrasena) {
-      this.mensajeError = 'Completa todos los campos.';
-      return;
-    }
-    this.cargando = true;
-    try {
-      const exito = await this.autenticacion.iniciarSesion(
-        this.credenciales.nombreUsuario.trim(),
-        this.credenciales.contrasena
-      );
-      if (exito) {
-        if (this.recordarme) {
-          localStorage.setItem('jeyrich_recordar', this.credenciales.nombreUsuario.trim());
-        } else {
-          localStorage.removeItem('jeyrich_recordar');
-        }
-        this.mensajeExito = '¡Bienvenido! Redirigiendo...';
-        setTimeout(() => this.router.navigate(['/dashboard']), 800);
-      } else {
-        this.mensajeError = 'Usuario o contraseña incorrectos.';
-        this.credenciales.contrasena = '';
-      }
-    } catch (error) {
-      this.mensajeError = 'Error al conectar con la base de datos. Intenta de nuevo.';
-    } finally {
-      this.cargando = false;
-    }
+  this.mensajeError = '';
+  this.mensajeExito = '';
+  if (!this.credenciales.nombreUsuario || !this.credenciales.contrasena) {
+    this.mensajeError = 'Completa todos los campos.';
+    return;
   }
+  this.cargando = true;
+  try {
+    const resultado = await this.autenticacion.iniciarSesion(
+      this.credenciales.nombreUsuario.trim(),
+      this.credenciales.contrasena
+    );
+    if (resultado.exito) {
+      if (this.recordarme) {
+        localStorage.setItem('jeyrich_recordar', this.credenciales.nombreUsuario.trim());
+      } else {
+        localStorage.removeItem('jeyrich_recordar');
+      }
+      this.mensajeExito = '¡Bienvenido! Redirigiendo...';
+      setTimeout(() => this.router.navigate(['/dashboard']), 800);
+    } else if (resultado.deshabilitado) {
+      this.mensajeError = 'Tu usuario está deshabilitado. Contáctate con soporte.';
+      this.credenciales.contrasena = '';
+    } else {
+      this.mensajeError = 'Usuario o contraseña incorrectos.';
+      this.credenciales.contrasena = '';
+    }
+  } catch (error) {
+    this.mensajeError = 'Error al conectar con la base de datos. Intenta de nuevo.';
+  } finally {
+    this.cargando = false;
+  }
+}
   toggleContrasena(): void {
     this.mostrarContrasena = !this.mostrarContrasena;
   }

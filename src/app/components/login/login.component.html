@@ -53,10 +53,10 @@
             [class.is-invalid]="campoUsuario.invalid && campoUsuario.touched"
             autocomplete="username"
           />
-          <div class="invalid-feedback" *ngIf="campoUsuario.invalid && campoUsuario.touched">
-            <span *ngIf="campoUsuario.errors?.['required']">El usuario es requerido.</span>
-            <span *ngIf="campoUsuario.errors?.['minlength']">Mínimo 3 caracteres.</span>
-          </div>
+        </div>
+        <div class="invalid-feedback" *ngIf="campoUsuario.invalid && campoUsuario.touched">
+          <span *ngIf="campoUsuario.errors?.['required']">El usuario es requerido.</span>
+          <span *ngIf="campoUsuario.errors?.['minlength']">Mínimo 3 caracteres.</span>
         </div>
       </div>
       <div class="mb-4 grupo-campo">
@@ -88,10 +88,10 @@
           >
             <i class="bi" [class.bi-eye]="!mostrarContrasena" [class.bi-eye-slash]="mostrarContrasena"></i>
           </button>
-          <div class="invalid-feedback" *ngIf="campoContrasena.invalid && campoContrasena.touched">
-            <span *ngIf="campoContrasena.errors?.['required']">La contraseña es requerida.</span>
-            <span *ngIf="campoContrasena.errors?.['minlength']">Mínimo 6 caracteres.</span>
-          </div>
+        </div>
+        <div class="invalid-feedback" *ngIf="campoContrasena.invalid && campoContrasena.touched">
+          <span *ngIf="campoContrasena.errors?.['required']">La contraseña es requerida.</span>
+          <span *ngIf="campoContrasena.errors?.['minlength']">Mínimo 6 caracteres.</span>
         </div>
       </div>
       <div class="d-flex justify-content-between align-items-center mb-4">

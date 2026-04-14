@@ -276,25 +276,27 @@ export class BaseDatosService {
       tx.onerror          = () => reject(tx.error);
     });
   }
-  async autenticarUsuario(nombreUsuario: string, contrasena: string): Promise<Usuario | null> {
-    const db = await this.obtenerBD();
-    return new Promise((resolve, reject) => {
-      const tx       = db.transaction(this.ALMACENES.USUARIOS, 'readonly');
-      const store    = tx.objectStore(this.ALMACENES.USUARIOS);
-      const indice   = store.index('idx_nombreUsuario');
-      const solicitud = indice.get(nombreUsuario);
-      solicitud.onsuccess = () => {
-        const usuario = solicitud.result as Usuario;
-        if (usuario && usuario.contrasena === contrasena && usuario.activo) {
-          resolve(usuario);
-        } else {
-          resolve(null);
-        }
-      };
-      solicitud.onerror = () => reject(solicitud.error);
-      tx.onerror        = () => reject(tx.error);
-    });
-  }
+  async autenticarUsuario(nombreUsuario: string, contrasena: string): Promise<{ usuario: Usuario | null, deshabilitado?: boolean }> {
+  const db = await this.obtenerBD();
+  return new Promise((resolve, reject) => {
+    const tx      = db.transaction(this.ALMACENES.USUARIOS, 'readonly');
+    const store   = tx.objectStore(this.ALMACENES.USUARIOS);
+    const indice  = store.index('idx_nombreUsuario');
+    const solicitud = indice.get(nombreUsuario);
+    solicitud.onsuccess = () => {
+      const usuario = solicitud.result as Usuario;
+      if (!usuario || usuario.contrasena !== contrasena) {
+        resolve({ usuario: null, deshabilitado: false }); 
+      } else if (!usuario.activo) {
+        resolve({ usuario: null, deshabilitado: true }); 
+      } else {
+        resolve({ usuario, deshabilitado: false }); 
+      }
+    };
+    solicitud.onerror = () => reject(solicitud.error);
+    tx.onerror        = () => reject(tx.error);
+  });
+}
   async actualizarUltimoAcceso(idUsuario: number): Promise<void> {
     const usuario = await this.obtenerPorId<Usuario>(this.ALMACENES.USUARIOS, idUsuario);
     if (usuario) {

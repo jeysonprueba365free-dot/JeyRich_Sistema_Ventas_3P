@@ -34,6 +34,7 @@
         <span>Reportes</span>
       </li>
     </ul>
+        
     <div class="sidebar-footer">
       <div class="info-usuario">
         <div class="avatar-usuario">{{ iniciales }}</div>
@@ -42,10 +43,13 @@
           <span class="rol-usuario">{{ rolUsuario }}</span>
         </div>
       </div>
-      <button class="btn-cerrar-sesion" (click)="cerrarSesion()" title="Cerrar sesión">
-        <i class="bi bi-box-arrow-right"></i>
+      <div class="divisor-footer"></div>
+      <button class="btn-cerrar-sesion" (click)="cerrarSesion()">
+        <i class="bi bi-power"></i>
+        <span class="cerrar-texto">Cerrar sesión</span>
       </button>
     </div>
+
   </nav>
   <main class="contenido-principal">
     <header class="barra-superior">
