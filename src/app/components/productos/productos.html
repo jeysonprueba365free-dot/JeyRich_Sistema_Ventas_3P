@@ -1,0 +1,361 @@
+<div class="contenedor-productos">
+
+  <div class="contenedor-toast" *ngIf="toastVisible">
+    <div class="notificacion"
+         [class.notificacion-exito]="toastTipo === 'exito'"
+         [class.notificacion-error]="toastTipo === 'error'">
+      <div class="notificacion-icono">
+        <i class="bi"
+           [class.bi-check-circle-fill]="toastTipo === 'exito'"
+           [class.bi-x-circle-fill]="toastTipo === 'error'"></i>
+      </div>
+      <span class="notificacion-texto">{{ toastMensaje }}</span>
+      <button class="notificacion-cerrar" (click)="cerrarToast()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="encabezado-modulo">
+    <div class="encabezado-izquierda">
+      <button class="boton-volver" (click)="location.back()" title="Volver">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <div class="separador-vertical"></div>
+      <div>
+        <h2 class="titulo-pagina">
+          <i class="bi bi-box-seam me-2"></i>Gestión de Productos
+        </h2>
+        <p class="subtitulo-pagina">Administra el catálogo de productos</p>
+      </div>
+    </div>
+    <button class="boton-agregar" (click)="abrirModalCrear()">
+      <i class="bi bi-plus-circle-fill me-2"></i>Nuevo Producto
+    </button>
+  </div>
+
+  <div class="barra-filtros">
+    <div class="campo-busqueda">
+      <i class="bi bi-search"></i>
+      <input type="text" placeholder="Buscar por nombre, código o descripción..."
+        [(ngModel)]="textoBusqueda" (input)="filtrarProductos()" />
+    </div>
+    <div class="grupo-selectores">
+      <select [(ngModel)]="filtroCategoria" (change)="filtrarProductos()" class="selector-filtro">
+        <option value="">Todas las categorías</option>
+        <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+      </select>
+      <select [(ngModel)]="filtroEstado" (change)="filtrarProductos()" class="selector-filtro">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activos</option>
+        <option value="inactivo">Inactivos</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="fila-resumen">
+    <div class="etiqueta-resumen">
+      <i class="bi bi-boxes"></i>
+      <span>Total: <strong>{{ totalProductos }}</strong></span>
+    </div>
+    <div class="etiqueta-resumen etiqueta-activo">
+      <i class="bi bi-check-circle"></i>
+      <span>Activos: <strong>{{ productosActivos }}</strong></span>
+    </div>
+    <div class="etiqueta-resumen etiqueta-alerta" *ngIf="stockBajo > 0">
+      <i class="bi bi-exclamation-triangle"></i>
+      <span>Stock bajo: <strong>{{ stockBajo }}</strong></span>
+    </div>
+  </div>
+
+  <div class="contenedor-tabla">
+
+    <div *ngIf="cargando" class="estado-cargando">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p>Cargando productos...</p>
+    </div>
+
+    
+    <div *ngIf="!cargando && productosFiltrados.length === 0" class="estado-vacio">
+      <i class="bi bi-box-seam"></i>
+      <p>No se encontraron productos</p>
+    </div>
+
+    <table class="tabla-productos" *ngIf="!cargando && productosFiltrados.length > 0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Código</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Proveedor</th>
+          <th>P. Venta</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let producto of productosFiltrados; let i = index"
+            [class.fila-inactiva]="!producto.activo"
+            [class.fila-stock-bajo]="esStockBajo(producto)">
+
+          <td class="columna-numero">{{ i + 1 }}</td>
+
+          <td>
+            <span class="etiqueta-codigo">{{ producto.codigo }}</span>
+          </td>
+
+          <td class="columna-nombre">
+            <div class="celda-producto">
+              <div class="icono-producto">
+                <i class="bi bi-box-seam"></i>
+              </div>
+              <div class="info-producto">
+                <span class="nombre-producto">{{ producto.nombre }}</span>
+                <span class="descripcion-producto">
+                  {{ producto.descripcion | slice:0:45 }}{{ producto.descripcion.length > 45 ? '...' : '' }}
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <span class="etiqueta-categoria">{{ nombreCategoria(producto.categoriaId) }}</span>
+          </td>
+
+          <td class="columna-proveedor">{{ nombreProveedor(producto.proveedorId) }}</td>
+
+          <td class="columna-precio">
+            <strong>Bs. {{ producto.precioVenta | number:'1.2-2' }}</strong>
+          </td>
+
+          <td>
+            <div class="celda-stock" [class.stock-critico]="esStockBajo(producto)">
+              <i class="bi"
+                 [class.bi-exclamation-triangle-fill]="esStockBajo(producto)"
+                 [class.bi-check-circle-fill]="!esStockBajo(producto)"></i>
+              <span>{{ producto.stock }} {{ producto.unidad }}</span>
+            </div>
+          </td>
+
+          <td>
+            <span class="pastilla-estado"
+              [class.pastilla-activo]="producto.activo"
+              [class.pastilla-inactivo]="!producto.activo">
+              <i class="bi"
+                [class.bi-check-circle-fill]="producto.activo"
+                [class.bi-x-circle-fill]="!producto.activo"></i>
+              {{ producto.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+
+          <td class="columna-acciones">
+            <button class="boton-accion boton-editar"
+                    (click)="abrirModalEditar(producto)" title="Editar">
+              <i class="bi bi-pencil-fill"></i><span>Editar</span>
+            </button>
+            <button class="boton-accion"
+                    [class.boton-activar]="!producto.activo"
+                    [class.boton-desactivar]="producto.activo"
+                    (click)="toggleEstado(producto)"
+                    [title]="producto.activo ? 'Desactivar' : 'Activar'">
+              <i class="bi"
+                [class.bi-toggle-on]="producto.activo"
+                [class.bi-toggle-off]="!producto.activo"></i>
+              <span>{{ producto.activo ? 'Desactivar' : 'Activar' }}</span>
+            </button>
+            <button class="boton-accion boton-eliminar"
+                    (click)="confirmarEliminar(producto)" title="Eliminar">
+              <i class="bi bi-trash3-fill"></i><span>Eliminar</span>
+            </button>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="fondo-modal" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="ventana-formulario" (click)="$event.stopPropagation()">
+
+      <div class="cabecera-modal">
+        <h3>
+          <i class="bi"
+            [class.bi-plus-circle-fill]="!productoEditando"
+            [class.bi-pencil-fill]="productoEditando"></i>
+          {{ productoEditando ? 'Editar Producto' : 'Nuevo Producto' }}
+        </h3>
+        <button class="boton-cerrar-modal" (click)="cerrarModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cuerpo-modal">
+
+        <div class="fila-campos">
+          <div class="campo-formulario">
+            <label>Categoría *</label>
+            <select [(ngModel)]="formularioProducto.categoriaId"
+                    (change)="alCambiarCategoria()">
+              <option [ngValue]="undefined">Seleccionar categoría...</option>
+              <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+            </select>
+            <small class="ayuda-campo" *ngIf="!productoEditando">
+              Generacion Automatica
+            </small>
+          </div>
+          <div class="campo-formulario">
+            <label>Proveedor *</label>
+            <select [(ngModel)]="formularioProducto.proveedorId">
+              <option [ngValue]="undefined">Seleccionar proveedor...</option>
+              <option *ngFor="let prov of proveedores" [value]="prov.id">{{ prov.nombre }}</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="fila-campos">
+          <div class="campo-formulario">
+            <label>Código *</label>
+            <div class="campo-con-icono">
+              <i class="bi bi-upc-scan icono-campo"></i>
+              <input type="text" [(ngModel)]="formularioProducto.codigo"
+                placeholder="Generacion Automática"
+                [readonly]="!productoEditando"
+                [class.campo-solo-lectura]="!productoEditando" />
+            </div>
+            <small class="ayuda-campo" *ngIf="!productoEditando">
+              <i class="bi bi-info-circle me-1"></i>Generado automáticamente
+            </small>
+          </div>
+          <div class="campo-formulario">
+            <label>Nombre del Producto *</label>
+            <input type="text" [(ngModel)]="formularioProducto.nombre"
+              placeholder="Ej: Arroz premium 1kg" />
+          </div>
+        </div>
+        
+        <div class="fila-campos">
+          <div class="campo-formulario">
+            <label>Precio Compra (Bs.) *</label>
+            <div class="campo-con-icono">
+              <span class="prefijo-campo">Bs.</span>
+              <input type="number" [(ngModel)]="formularioProducto.precioCompra"
+                min="0" step="0.01" placeholder="0.00" class="con-prefijo" />
+            </div>
+          </div>
+          <div class="campo-formulario">
+            <label>Precio Venta (Bs.) *</label>
+            <div class="campo-con-icono">
+              <span class="prefijo-campo">Bs.</span>
+              <input type="number" [(ngModel)]="formularioProducto.precioVenta"
+                min="0" step="0.01" placeholder="0.00" class="con-prefijo" />
+            </div>
+          </div>
+        </div>
+        
+        <div class="fila-campos tres-columnas">
+          <div class="campo-formulario">
+            <label>Stock actual</label>
+            <input type="number" [(ngModel)]="formularioProducto.stock"
+              min="0" placeholder="0" />
+          </div>
+          <div class="campo-formulario">
+            <label>Stock mínimo</label>
+            <input type="number" [(ngModel)]="formularioProducto.stockMinimo"
+              min="0" placeholder="5" />
+            <small class="ayuda-campo">Alerta cuando baje de este valor</small>
+          </div>
+          <div class="campo-formulario">
+            <label>Unidad de medida</label>
+            <select [(ngModel)]="formularioProducto.unidad">
+              <option value="unidad">Unidad</option>
+              <option value="kg">Kilogramo</option>
+              <option value="litro">Litro</option>
+              <option value="caja">Caja</option>
+              <option value="paquete">Paquete</option>
+              <option value="bolsa">Bolsa</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="campo-formulario">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="formularioProducto.descripcion"
+            placeholder="Descripción opcional del producto..." rows="2"></textarea>
+        </div>
+        
+        <div class="campo-formulario campo-estado" *ngIf="productoEditando">
+          <label>Estado</label>
+          <label class="interruptor">
+            <input type="checkbox" [(ngModel)]="formularioProducto.activo" />
+            <span class="interruptor-slider"></span>
+            <span class="interruptor-etiqueta">
+              {{ formularioProducto.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </label>
+        </div>
+
+        <div class="alerta-modal alerta-cargando" *ngIf="guardando">
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          {{ productoEditando ? 'Actualizando producto...' : 'Guardando producto...' }}
+        </div>
+        <div class="alerta-modal alerta-error" *ngIf="errorModal && !guardando">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorModal }}
+        </div>
+
+      </div>
+
+      <div class="pie-modal">
+        <button class="boton-cancelar" (click)="cerrarModal()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button class="boton-guardar" (click)="guardarProducto()" [disabled]="guardando">
+          <span class="spinner-border spinner-border-sm me-2" *ngIf="guardando"></span>
+          <i class="bi bi-check-lg me-1" *ngIf="!guardando"></i>
+          {{ guardando ? 'Guardando...' : 'Guardar Producto' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="fondo-modal" *ngIf="mostrarModalEliminar" (click)="cerrarModalEliminar()">
+    <div class="ventana-confirmacion" (click)="$event.stopPropagation()">
+      <div class="icono-advertencia">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <h3>¿Eliminar producto?</h3>
+      <p>
+        ¿Estás seguro de eliminar
+        <strong>{{ productoAEliminar?.nombre }}</strong>?
+        Esta acción no se puede deshacer.
+      </p>
+      <div class="alerta-modal alerta-cargando"
+           *ngIf="guardando"
+           style="margin-bottom: 16px; text-align: left;">
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Eliminando producto...
+      </div>
+      <div class="botones-confirmacion">
+        <button class="boton-cancelar" (click)="cerrarModalEliminar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button class="boton-confirmar-eliminar" (click)="eliminarProducto()" [disabled]="guardando">
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="guardando"></span>
+          <span *ngIf="!guardando">Sí, eliminar</span>
+          <span *ngIf="guardando">Eliminando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
