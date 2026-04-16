@@ -1,1 +1,389 @@
-<p>reportes works!</p>
+<div class="contenedor-reportes">
+
+  <div class="encabezado-impresion">
+    <div class="print-logo-wrap">
+      <img src="assets/JeyRich.png" alt="JeyRich" class="print-logo" />
+    </div>
+    <div class="print-titulo-wrap">
+      <h1 class="print-titulo">Reporte — {{ nombreTabActiva }}</h1>
+      <p class="print-periodo">Período: {{ fechaDesde }} al {{ fechaHasta }}</p>
+    </div>
+  </div>
+
+  <div class="contenedor-toast" *ngIf="toastVisible">
+    <div class="notificacion"
+         [class.notificacion-exito]="toastTipo === 'exito'"
+         [class.notificacion-error]="toastTipo === 'error'">
+      <div class="notificacion-icono">
+        <i class="bi" [class.bi-check-circle-fill]="toastTipo === 'exito'"
+                      [class.bi-x-circle-fill]="toastTipo === 'error'"></i>
+      </div>
+      <span class="notificacion-texto">{{ toastMensaje }}</span>
+      <button class="notificacion-cerrar" (click)="cerrarToast()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="encabezado-modulo no-print">
+    <div class="encabezado-izquierda">
+      <button class="boton-volver" (click)="location.back()" title="Volver">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <div class="separador-vertical"></div>
+      <div>
+        <h2 class="titulo-pagina"><i class="bi bi-bar-chart-line me-2"></i>Reportes</h2>
+        <p class="subtitulo-pagina">Análisis y estadísticas del sistema</p>
+      </div>
+    </div>
+    <div class="acciones-encabezado">
+      <button class="boton-exportar" (click)="exportarCSV()">
+        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Exportar CSV
+      </button>
+      <button class="boton-imprimir" (click)="imprimirReporte()">
+        <i class="bi bi-printer me-2"></i>Imprimir
+      </button>
+    </div>
+  </div>
+
+  <div class="barra-filtros-fecha no-print">
+    <div class="grupo-fecha">
+      <label>Desde</label>
+      <input type="date" [(ngModel)]="fechaDesde" class="input-fecha" />
+    </div>
+    <div class="grupo-fecha">
+      <label>Hasta</label>
+      <input type="date" [(ngModel)]="fechaHasta" class="input-fecha" />
+    </div>
+    <button class="boton-aplicar" (click)="aplicarFiltros()" [disabled]="cargando">
+      <span class="spinner-border spinner-border-sm me-1" *ngIf="cargando"></span>
+      <i class="bi bi-search me-1" *ngIf="!cargando"></i>
+      {{ cargando ? 'Cargando...' : 'Aplicar' }}
+    </button>
+  </div>
+
+  <div class="tabs-navegacion no-print">
+    <button class="tab-btn" [class.activo]="tabActiva === 'resumen'"     (click)="cambiarTab('resumen')">
+      <i class="bi bi-grid-1x2"></i><span>Resumen</span>
+    </button>
+    <button class="tab-btn" [class.activo]="tabActiva === 'ventas'"      (click)="cambiarTab('ventas')">
+      <i class="bi bi-receipt"></i><span>Ventas</span>
+    </button>
+    <button class="tab-btn" [class.activo]="tabActiva === 'productos'"   (click)="cambiarTab('productos')">
+      <i class="bi bi-box-seam"></i><span>Productos</span>
+    </button>
+    <button class="tab-btn" [class.activo]="tabActiva === 'clientes'"    (click)="cambiarTab('clientes')">
+      <i class="bi bi-people"></i><span>Clientes</span>
+    </button>
+    <button class="tab-btn" [class.activo]="tabActiva === 'inventario'"  (click)="cambiarTab('inventario')">
+      <i class="bi bi-exclamation-triangle"></i><span>Stock Bajo</span>
+    </button>
+    <button class="tab-btn" [class.activo]="tabActiva === 'movimientos'" (click)="cambiarTab('movimientos')">
+      <i class="bi bi-arrow-left-right"></i><span>Movimientos</span>
+    </button>
+  </div>
+
+  <div *ngIf="tabActiva === 'resumen'" class="contenido-tab">
+
+    <div class="grid-kpis">
+      <div class="kpi-card kpi-ventas">
+        <div class="kpi-icono"><i class="bi bi-receipt-cutoff"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-valor">{{ kpi.totalVentas }}</span>
+          <span class="kpi-label">Ventas completadas</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-ingresos">
+        <div class="kpi-icono"><i class="bi bi-cash-stack"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-valor">Bs {{ kpi.totalIngresos | number:'1.2-2' }}</span>
+          <span class="kpi-label">Ingresos totales</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-descuentos">
+        <div class="kpi-icono"><i class="bi bi-tag"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-valor">Bs {{ kpi.totalDescuentos | number:'1.2-2' }}</span>
+          <span class="kpi-label">Descuentos aplicados</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-ticket">
+        <div class="kpi-icono"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-valor">Bs {{ kpi.ticketPromedio | number:'1.2-2' }}</span>
+          <span class="kpi-label">Ticket promedio</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-anuladas">
+        <div class="kpi-icono"><i class="bi bi-slash-circle"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-valor">{{ kpi.ventasAnuladas }}</span>
+          <span class="kpi-label">Ventas anuladas</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-stock">
+        <div class="kpi-icono"><i class="bi bi-exclamation-triangle"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-valor">{{ kpi.productosStockBajo }}</span>
+          <span class="kpi-label">Productos stock bajo</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-chart" *ngIf="ventasPorDia.length > 0">
+      <div class="card-chart-header">
+        <h3><i class="bi bi-bar-chart me-2"></i>Ventas por día</h3>
+        <span class="badge-periodo">{{ fechaDesde }} — {{ fechaHasta }}</span>
+      </div>
+      <div class="chart-wrap">
+        <svg [attr.viewBox]="'0 0 ' + CHART_W + ' ' + (CHART_H + 30)"
+             class="chart-svg" preserveAspectRatio="xMidYMid meet">
+          <line x1="30" [attr.y1]="10" [attr.x2]="CHART_W - 10" [attr.y2]="10"
+                stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="30" [attr.y1]="CHART_H / 2" [attr.x2]="CHART_W - 10" [attr.y2]="CHART_H / 2"
+                stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="30" [attr.y1]="CHART_H" [attr.x2]="CHART_W - 10" [attr.y2]="CHART_H"
+                stroke="#e2e8f0" stroke-width="1"/>
+          <g *ngFor="let b of chartVentas">
+            <rect [attr.x]="b.x - 14" [attr.y]="b.y" [attr.width]="28" [attr.height]="b.h"
+                  rx="4" class="barra-chart">
+              <title>{{ b.fecha }}: Bs {{ b.total | number:'1.2-2' }}</title>
+            </rect>
+            <text [attr.x]="b.x" [attr.y]="CHART_H + 20" text-anchor="middle"
+                  class="label-chart">{{ b.fecha }}</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="estado-vacio" *ngIf="ventasPorDia.length === 0 && !cargando">
+      <i class="bi bi-bar-chart"></i>
+      <p>Sin datos para el período seleccionado</p>
+    </div>
+  </div>
+
+  <div *ngIf="tabActiva === 'ventas'" class="contenido-tab">
+    <div class="card-tabla">
+      <div class="card-tabla-header">
+        <h3><i class="bi bi-receipt me-2"></i>Detalle de ventas</h3>
+        <span class="badge-count">{{ todasLasVentas.length }} registros</span>
+      </div>
+      <div class="estado-vacio" *ngIf="todasLasVentas.length === 0">
+        <i class="bi bi-receipt"></i><p>Sin ventas en el período</p>
+      </div>
+      <div class="tabla-scroll" *ngIf="todasLasVentas.length > 0">
+        <table class="tabla-reporte">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>N° Venta</th><th>Cliente</th>
+              <th>Productos</th><th>Descuento</th><th>Total</th>
+              <th>Método</th><th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of todasLasVentas" [class.fila-anulada]="v.estado === 'anulada'">
+              <td class="col-fecha">{{ v.fechaVenta | date:'dd/MM/yy HH:mm' }}</td>
+              <td><span class="etiqueta-codigo">{{ v.numeroVenta }}</span></td>
+              <td class="col-cliente">{{ v.nombreCliente || 'General' }}</td>
+              <td class="col-num">{{ v.detalles.length }}</td>
+              <td class="col-desc" *ngIf="v.descuento > 0">- Bs {{ v.descuento | number:'1.2-2' }}</td>
+              <td class="col-desc" *ngIf="v.descuento === 0">—</td>
+              <td class="col-total">Bs {{ v.total | number:'1.2-2' }}</td>
+              <td><span class="pastilla-metodo pastilla-metodo-{{ v.metodoPago }}">{{ v.metodoPago }}</span></td>
+              <td>
+                <span class="pastilla-estado"
+                      [class.pastilla-activo]="v.estado === 'completada'"
+                      [class.pastilla-inactivo]="v.estado === 'anulada'"
+                      [class.pastilla-pendiente]="v.estado === 'pendiente'">
+                  {{ v.estado | titlecase }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="fila-total-tabla">
+              <td colspan="5" class="col-total-label">TOTAL INGRESOS</td>
+              <td class="col-total">Bs {{ kpi.totalIngresos | number:'1.2-2' }}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="tabActiva === 'productos'" class="contenido-tab">
+    <div class="card-tabla">
+      <div class="card-tabla-header">
+        <h3><i class="bi bi-box-seam me-2"></i>Productos más vendidos</h3>
+        <span class="badge-count">Top {{ productosMasVendidos.length }}</span>
+      </div>
+      <div class="estado-vacio" *ngIf="productosMasVendidos.length === 0">
+        <i class="bi bi-box-seam"></i><p>Sin datos en el período</p>
+      </div>
+      <div class="lista-barras" *ngIf="productosMasVendidos.length > 0">
+        <div class="item-barra" *ngFor="let p of productosMasVendidos; let i = index">
+          <div class="item-barra-rank">#{{ i + 1 }}</div>
+          <div class="item-barra-info">
+            <div class="item-barra-top">
+              <span class="item-barra-nombre">{{ p.nombre }}</span>
+              <span class="item-barra-valor">{{ p.totalVendido }} uds — Bs {{ p.ingresos | number:'1.2-2' }}</span>
+            </div>
+            <div class="barra-progreso">
+              <div class="barra-progreso-fill"
+                   [style.width.%]="(p.totalVendido / maxProductoVendido) * 100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="tabActiva === 'clientes'" class="contenido-tab">
+    <div class="card-tabla">
+      <div class="card-tabla-header">
+        <h3><i class="bi bi-people me-2"></i>Clientes con más compras</h3>
+        <span class="badge-count">Top {{ clientesTopCompras.length }}</span>
+      </div>
+      <div class="estado-vacio" *ngIf="clientesTopCompras.length === 0">
+        <i class="bi bi-people"></i><p>Sin datos en el período</p>
+      </div>
+      <div class="lista-barras" *ngIf="clientesTopCompras.length > 0">
+        <div class="item-barra" *ngFor="let c of clientesTopCompras; let i = index">
+          <div class="item-barra-rank">#{{ i + 1 }}</div>
+          <div class="item-barra-info">
+            <div class="item-barra-top">
+              <span class="item-barra-nombre"><i class="bi bi-person-circle me-1"></i>{{ c.nombre }}</span>
+              <span class="item-barra-valor">{{ c.totalCompras }} compra(s) — Bs {{ c.totalGastado | number:'1.2-2' }}</span>
+            </div>
+            <div class="barra-progreso">
+              <div class="barra-progreso-fill barra-clientes"
+                   [style.width.%]="(c.totalGastado / maxClienteGastado) * 100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="tabActiva === 'inventario'" class="contenido-tab">
+    <div class="card-tabla">
+      <div class="card-tabla-header">
+        <h3><i class="bi bi-exclamation-triangle me-2"></i>Productos con stock bajo</h3>
+        <span class="badge-count badge-alerta">{{ productosStockBajo.length }} alertas</span>
+      </div>
+      <div class="estado-vacio" *ngIf="productosStockBajo.length === 0">
+        <i class="bi bi-check-circle" style="color:#22c55e"></i>
+        <p style="color:#166534">¡Todo el inventario está en niveles óptimos!</p>
+      </div>
+      <div class="tabla-scroll" *ngIf="productosStockBajo.length > 0">
+        <table class="tabla-reporte">
+          <thead>
+            <tr><th>#</th><th>Producto</th><th>Código</th><th>Stock Actual</th><th>Stock Mínimo</th><th>Unidad</th><th>Alerta</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of productosStockBajo; let i = index">
+              <td class="col-num">{{ i + 1 }}</td>
+              <td><strong>{{ p.nombre }}</strong></td>
+              <td><span class="etiqueta-codigo">{{ p.codigo }}</span></td>
+              <td>
+                <span class="stock-actual" [class.stock-critico]="p.stock === 0"
+                                           [class.stock-bajo]="p.stock > 0 && p.stock <= p.stockMinimo">
+                  {{ p.stock }}
+                </span>
+              </td>
+              <td class="col-num">{{ p.stockMinimo }}</td>
+              <td>{{ p.unidad }}</td>
+              <td>
+                <span class="pastilla-alerta" *ngIf="p.stock === 0">Sin stock</span>
+                <span class="pastilla-alerta pastilla-alerta-warn" *ngIf="p.stock > 0">Stock bajo</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="tabActiva === 'movimientos'" class="contenido-tab">
+    <div class="card-tabla">
+      <div class="card-tabla-header">
+        <h3><i class="bi bi-arrow-left-right me-2"></i>Movimientos de inventario</h3>
+        <div class="header-acciones">
+          <select class="selector-filtro-mov no-print"
+                  [(ngModel)]="filtroTipoMovimiento" (change)="filtrarMovimientos()">
+            <option value="">Todos los tipos</option>
+            <option value="entrada">Entradas</option>
+            <option value="salida">Salidas</option>
+            <option value="ajuste">Ajustes</option>
+          </select>
+          <span class="badge-count">{{ movimientosFiltrados.length }} registros</span>
+        </div>
+      </div>
+      <div class="estado-vacio" *ngIf="movimientosFiltrados.length === 0">
+        <i class="bi bi-arrow-left-right"></i><p>Sin movimientos en el período</p>
+      </div>
+      <div class="tabla-scroll" *ngIf="movimientosFiltrados.length > 0">
+        <table class="tabla-reporte">
+          <thead>
+            <tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Motivo</th><th>Referencia</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of movimientosFiltrados">
+              <td class="col-fecha">{{ m.fecha | date:'dd/MM/yy HH:mm' }}</td>
+              <td><strong>{{ m.nombreProducto }}</strong></td>
+              <td>
+                <span class="pastilla-tipo"
+                      [class.tipo-entrada]="m.tipo === 'entrada'"
+                      [class.tipo-salida]="m.tipo === 'salida'"
+                      [class.tipo-ajuste]="m.tipo === 'ajuste'">
+                  <i class="bi me-1"
+                     [class.bi-arrow-down-circle-fill]="m.tipo === 'entrada'"
+                     [class.bi-arrow-up-circle-fill]="m.tipo === 'salida'"
+                     [class.bi-sliders]="m.tipo === 'ajuste'"></i>
+                  {{ m.tipo | titlecase }}
+                </span>
+              </td>
+              <td class="col-num">
+                <span [class.cantidad-entrada]="m.tipo === 'entrada'"
+                      [class.cantidad-salida]="m.tipo === 'salida'">
+                  {{ m.tipo === 'entrada' ? '+' : m.tipo === 'salida' ? '-' : '' }}{{ m.cantidad }}
+                </span>
+              </td>
+              <td class="col-motivo">{{ m.motivo }}</td>
+              <td>
+                <span class="etiqueta-codigo" *ngIf="m.referencia">{{ m.referencia }}</span>
+                <span class="sin-ref" *ngIf="!m.referencia">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="pie-impresion">
+    <div class="pie-linea-divisor"></div>
+    <div class="pie-contenido">
+      <div class="pie-izquierda">
+        <i class="bi bi-shield-check me-1"></i>
+        Documento generado por el sistema JeyRich
+      </div>
+      <div class="pie-derecha">
+        <div class="pie-usuario" *ngIf="usuarioActual">
+          <i class="bi bi-person-circle me-1"></i>
+          Impreso por: <strong>{{ usuarioActual.nombreCompleto }}</strong>
+          <span class="pie-rol">({{ usuarioActual.rol | titlecase }})</span>
+        </div>
+        <div class="pie-fecha">
+          <i class="bi bi-calendar3 me-1"></i>
+          {{ fechaImpresion | date:'dd/MM/yyyy HH:mm:ss' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
