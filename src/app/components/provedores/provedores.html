@@ -1,0 +1,308 @@
+<div class="contenedor-productos">
+
+  <div class="contenedor-toast" *ngIf="toastVisible">
+    <div class="notificacion"
+         [class.notificacion-exito]="toastTipo === 'exito'"
+         [class.notificacion-error]="toastTipo === 'error'">
+      <div class="notificacion-icono">
+        <i class="bi"
+           [class.bi-check-circle-fill]="toastTipo === 'exito'"
+           [class.bi-x-circle-fill]="toastTipo === 'error'"></i>
+      </div>
+      <span class="notificacion-texto">{{ toastMensaje }}</span>
+      <button class="notificacion-cerrar" (click)="cerrarToast()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="encabezado-modulo">
+    <div class="encabezado-izquierda">
+      <button class="boton-volver" (click)="location.back()" title="Volver">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <div class="separador-vertical"></div>
+      <div>
+        <h2 class="titulo-pagina">
+          <i class="bi bi-truck me-2"></i>Gestión de Proveedores
+        </h2>
+        <p class="subtitulo-pagina">Administra los proveedores del sistema</p>
+      </div>
+    </div>
+    <button class="boton-agregar" (click)="abrirModalCrear()">
+      <i class="bi bi-plus-circle-fill me-2"></i>Nuevo Proveedor
+    </button>
+  </div>
+
+  <div class="barra-filtros">
+    <div class="campo-busqueda">
+      <i class="bi bi-search"></i>
+      <input type="text" placeholder="Buscar por nombre, RUC, contacto o correo..."
+        [(ngModel)]="textoBusqueda" (input)="filtrarProveedores()" />
+    </div>
+    <div class="grupo-selectores">
+      <select [(ngModel)]="filtroEstado" (change)="filtrarProveedores()" class="selector-filtro">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activos</option>
+        <option value="inactivo">Inactivos</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="fila-resumen">
+    <div class="etiqueta-resumen">
+      <i class="bi bi-truck"></i>
+      <span>Total: <strong>{{ totalProveedores }}</strong></span>
+    </div>
+    <div class="etiqueta-resumen etiqueta-activo">
+      <i class="bi bi-check-circle"></i>
+      <span>Activos: <strong>{{ proveedoresActivos }}</strong></span>
+    </div>
+    <div class="etiqueta-resumen" *ngIf="proveedoresInactivos > 0">
+      <i class="bi bi-x-circle" style="color:#dc2626"></i>
+      <span>Inactivos: <strong>{{ proveedoresInactivos }}</strong></span>
+    </div>
+  </div>
+
+  <div class="contenedor-tabla">
+
+    <div *ngIf="cargando" class="estado-cargando">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p>Cargando proveedores...</p>
+    </div>
+
+    <div *ngIf="!cargando && proveedoresFiltrados.length === 0" class="estado-vacio">
+      <i class="bi bi-truck"></i>
+      <p>No se encontraron proveedores</p>
+    </div>
+
+    <table class="tabla-productos" *ngIf="!cargando && proveedoresFiltrados.length > 0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Proveedor</th>
+          <th>RUC</th>
+          <th>Contacto</th>
+          <th>Teléfono</th>
+          <th>Correo</th>
+          <th>Dirección</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let proveedor of proveedoresFiltrados; let i = index"
+            [class.fila-inactiva]="!proveedor.activo">
+
+          <td class="columna-numero">{{ i + 1 }}</td>
+
+          <td>
+            <div class="celda-producto">
+              <div class="icono-producto">
+                <i class="bi bi-truck"></i>
+              </div>
+              <div class="info-producto">
+                <span class="nombre-producto">{{ proveedor.nombre }}</span>
+                <span class="descripcion-producto">
+                  Registrado: {{ proveedor.fechaRegistro | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <span class="etiqueta-codigo">{{ proveedor.ruc }}</span>
+          </td>
+
+          <td>{{ proveedor.contacto }}</td>
+
+          <td>
+            <a href="tel:{{ proveedor.telefono }}" style="color:#041e42; text-decoration:none; font-weight:600;">
+              <i class="bi bi-telephone me-1" style="font-size:0.8rem;"></i>{{ proveedor.telefono }}
+            </a>
+          </td>
+
+          <td class="columna-proveedor">
+            <a href="mailto:{{ proveedor.correo }}" style="color:#041e42; text-decoration:none;">
+              {{ proveedor.correo || '—' }}
+            </a>
+          </td>
+
+          <td class="columna-proveedor">{{ proveedor.direccion || '—' }}</td>
+
+          <td>
+            <span class="pastilla-estado"
+              [class.pastilla-activo]="proveedor.activo"
+              [class.pastilla-inactivo]="!proveedor.activo">
+              <i class="bi"
+                [class.bi-check-circle-fill]="proveedor.activo"
+                [class.bi-x-circle-fill]="!proveedor.activo"></i>
+              {{ proveedor.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+
+          <td class="columna-acciones">
+            <button class="boton-accion boton-editar"
+                    (click)="abrirModalEditar(proveedor)" title="Editar">
+              <i class="bi bi-pencil-fill"></i><span>Editar</span>
+            </button>
+            <button class="boton-accion"
+                    [class.boton-activar]="!proveedor.activo"
+                    [class.boton-desactivar]="proveedor.activo"
+                    (click)="toggleEstado(proveedor)"
+                    [title]="proveedor.activo ? 'Desactivar' : 'Activar'">
+              <i class="bi"
+                [class.bi-toggle-on]="proveedor.activo"
+                [class.bi-toggle-off]="!proveedor.activo"></i>
+              <span>{{ proveedor.activo ? 'Desactivar' : 'Activar' }}</span>
+            </button>
+            <button class="boton-accion boton-eliminar"
+                    (click)="confirmarEliminar(proveedor)" title="Eliminar">
+              <i class="bi bi-trash3-fill"></i><span>Eliminar</span>
+            </button>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="fondo-modal" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="ventana-formulario" (click)="$event.stopPropagation()">
+
+      <div class="cabecera-modal">
+        <h3>
+          <i class="bi"
+            [class.bi-plus-circle-fill]="!proveedorEditando"
+            [class.bi-pencil-fill]="proveedorEditando"></i>
+          {{ proveedorEditando ? 'Editar Proveedor' : 'Nuevo Proveedor' }}
+        </h3>
+        <button class="boton-cerrar-modal" (click)="cerrarModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cuerpo-modal">
+
+        <div class="fila-campos">
+          <div class="campo-formulario">
+            <label>Nombre / Razón Social *</label>
+            <input type="text" [(ngModel)]="formularioProveedor.nombre"
+              placeholder="Ej: Distribuidora El Sol S.A." />
+          </div>
+          <div class="campo-formulario">
+            <label>NIT *</label>
+            <div class="campo-con-icono">
+              <i class="bi bi-upc-scan icono-campo"></i>
+              <input type="text" [(ngModel)]="formularioProveedor.ruc"
+                placeholder="Ej: 1234567890" maxlength="15" />
+            </div>
+          </div>
+        </div>
+
+        <div class="fila-campos">
+          <div class="campo-formulario">
+            <label>Persona de Contacto *</label>
+            <input type="text" [(ngModel)]="formularioProveedor.contacto"
+              placeholder="Ej: Juan Pérez" />
+          </div>
+          <div class="campo-formulario">
+            <label>Teléfono *</label>
+            <div class="campo-con-icono">
+              <i class="bi bi-telephone icono-campo"></i>
+              <input type="tel" [(ngModel)]="formularioProveedor.telefono"
+                placeholder="Ej: 70012345" />
+            </div>
+          </div>
+        </div>
+
+        <div class="fila-campos">
+          <div class="campo-formulario">
+            <label>Correo Electrónico</label>
+            <div class="campo-con-icono">
+              <i class="bi bi-envelope icono-campo"></i>
+              <input type="email" [(ngModel)]="formularioProveedor.correo"
+                placeholder="correo@empresa.com" />
+            </div>
+          </div>
+          <div class="campo-formulario">
+            <label>Dirección</label>
+            <input type="text" [(ngModel)]="formularioProveedor.direccion"
+              placeholder="Ej: Av. Principal 123" />
+          </div>
+        </div>
+
+        <div class="campo-formulario campo-estado" *ngIf="proveedorEditando">
+          <label>Estado</label>
+          <label class="interruptor">
+            <input type="checkbox" [(ngModel)]="formularioProveedor.activo" />
+            <span class="interruptor-slider"></span>
+            <span class="interruptor-etiqueta">
+              {{ formularioProveedor.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </label>
+        </div>
+
+        <div class="alerta-modal alerta-cargando" *ngIf="guardando">
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          {{ proveedorEditando ? 'Actualizando proveedor...' : 'Guardando proveedor...' }}
+        </div>
+        <div class="alerta-modal alerta-error" *ngIf="errorModal && !guardando">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorModal }}
+        </div>
+
+      </div>
+
+      <div class="pie-modal">
+        <button class="boton-cancelar" (click)="cerrarModal()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button class="boton-guardar" (click)="guardarProveedor()" [disabled]="guardando">
+          <span class="spinner-border spinner-border-sm me-2" *ngIf="guardando"></span>
+          <i class="bi bi-check-lg me-1" *ngIf="!guardando"></i>
+          {{ guardando ? 'Guardando...' : 'Guardar Proveedor' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="fondo-modal" *ngIf="mostrarModalEliminar" (click)="cerrarModalEliminar()">
+    <div class="ventana-confirmacion" (click)="$event.stopPropagation()">
+      <div class="icono-advertencia">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <h3>¿Eliminar proveedor?</h3>
+      <p>
+        ¿Estás seguro de eliminar
+        <strong>{{ proveedorAEliminar?.nombre }}</strong>?
+        Esta acción no se puede deshacer.
+      </p>
+      <div class="alerta-modal alerta-cargando"
+           *ngIf="guardando"
+           style="margin-bottom: 16px; text-align: left;">
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Eliminando proveedor...
+      </div>
+      <div class="botones-confirmacion">
+        <button class="boton-cancelar" (click)="cerrarModalEliminar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button class="boton-confirmar-eliminar" (click)="eliminarProveedor()" [disabled]="guardando">
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="guardando"></span>
+          <span *ngIf="!guardando">Sí, eliminar</span>
+          <span *ngIf="guardando">Eliminando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
