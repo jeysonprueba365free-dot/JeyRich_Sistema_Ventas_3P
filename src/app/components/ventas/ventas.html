@@ -1,0 +1,537 @@
+<div class="contenedor-productos">
+
+  <div class="contenedor-toast" *ngIf="toastVisible">
+    <div class="notificacion"
+         [class.notificacion-exito]="toastTipo === 'exito'"
+         [class.notificacion-error]="toastTipo === 'error'">
+      <div class="notificacion-icono">
+        <i class="bi"
+           [class.bi-check-circle-fill]="toastTipo === 'exito'"
+           [class.bi-x-circle-fill]="toastTipo === 'error'"></i>
+      </div>
+      <span class="notificacion-texto">{{ toastMensaje }}</span>
+      <button class="notificacion-cerrar" (click)="cerrarToast()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="encabezado-modulo">
+    <div class="encabezado-izquierda">
+      <button class="boton-volver" (click)="location.back()" title="Volver">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <div class="separador-vertical"></div>
+      <div>
+        <h2 class="titulo-pagina">
+          <i class="bi bi-receipt me-2"></i>Gestión de Ventas
+        </h2>
+        <p class="subtitulo-pagina">Administra las ventas del sistema</p>
+      </div>
+    </div>
+    <button class="boton-agregar" (click)="abrirModalCrear()">
+      <i class="bi bi-plus-circle-fill me-2"></i>Nueva Venta
+    </button>
+  </div>
+
+  <div class="barra-filtros">
+    <div class="campo-busqueda">
+      <i class="bi bi-search"></i>
+      <input type="text" placeholder="Buscar por número de venta o cliente..."
+        [(ngModel)]="textoBusqueda" (input)="filtrarVentas()" />
+    </div>
+    <div class="grupo-selectores">
+      <select [(ngModel)]="filtroEstado" (change)="filtrarVentas()" class="selector-filtro">
+        <option value="">Todos los estados</option>
+        <option value="completada">Completadas</option>
+        <option value="anulada">Anuladas</option>
+        <option value="pendiente">Pendientes</option>
+      </select>
+      <select [(ngModel)]="filtroMetodo" (change)="filtrarVentas()" class="selector-filtro">
+        <option value="">Todos los métodos</option>
+        <option *ngFor="let m of METODOS_PAGO" [value]="m.value">{{ m.label }}</option>
+      </select>
+      <input type="date" [(ngModel)]="filtroFechaDesde" (change)="filtrarVentas()"
+        class="selector-filtro" title="Desde" />
+      <input type="date" [(ngModel)]="filtroFechaHasta" (change)="filtrarVentas()"
+        class="selector-filtro" title="Hasta" />
+      <button class="boton-limpiar" *ngIf="hayFiltros" (click)="limpiarFiltros()">
+        <i class="bi bi-x-circle me-1"></i>Limpiar
+      </button>
+    </div>
+  </div>
+
+  <div class="fila-resumen">
+    <div class="etiqueta-resumen">
+      <i class="bi bi-receipt"></i>
+      <span>Total: <strong>{{ totalVentas }}</strong></span>
+    </div>
+    <div class="etiqueta-resumen etiqueta-activo">
+      <i class="bi bi-check-circle"></i>
+      <span>Completadas: <strong>{{ ventasCompletadas }}</strong></span>
+    </div>
+    <div class="etiqueta-resumen" *ngIf="ventasAnuladas > 0">
+      <i class="bi bi-x-circle" style="color:#dc2626"></i>
+      <span>Anuladas: <strong>{{ ventasAnuladas }}</strong></span>
+    </div>
+    <div class="etiqueta-resumen etiqueta-ingreso">
+      <i class="bi bi-currency-dollar"></i>
+      <span>Ingresos: <strong>Bs {{ ingresoTotal | number:'1.2-2' }}</strong></span>
+    </div>
+  </div>
+
+  <div class="contenedor-tabla">
+
+    <div *ngIf="cargando" class="estado-cargando">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p>Cargando ventas...</p>
+    </div>
+
+    <div *ngIf="!cargando && ventasFiltradas.length === 0" class="estado-vacio">
+      <i class="bi bi-receipt"></i>
+      <p>No se encontraron ventas</p>
+    </div>
+
+    <table class="tabla-productos" *ngIf="!cargando && ventasFiltradas.length > 0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>N° Venta</th>
+          <th>Cliente</th>
+          <th>Productos</th>
+          <th>Método de Pago</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let venta of ventasFiltradas; let i = index"
+            [class.fila-inactiva]="venta.estado === 'anulada'">
+
+          <td class="columna-numero">{{ i + 1 }}</td>
+
+          <td>
+            <span class="etiqueta-codigo">{{ venta.numeroVenta }}</span>
+          </td>
+
+          <td>
+            <div class="celda-producto">
+              <div class="icono-producto">
+                <i class="bi bi-person"></i>
+              </div>
+              <div class="info-producto">
+                <span class="nombre-producto">{{ venta.nombreCliente || 'Cliente general' }}</span>
+                <span class="descripcion-producto">{{ venta.detalles.length }} producto(s)</span>
+              </div>
+            </div>
+          </td>
+
+          <td class="columna-proveedor">
+            <span *ngFor="let d of venta.detalles.slice(0, 2)" class="etiqueta-mini-producto">
+              {{ d.nombreProducto }} x{{ d.cantidad }}
+            </span>
+            <span *ngIf="venta.detalles.length > 2" class="etiqueta-mas">
+              +{{ venta.detalles.length - 2 }} más
+            </span>
+          </td>
+
+          <td>
+            <span class="pastilla-metodo pastilla-metodo-{{ venta.metodoPago }}">
+              <i class="bi me-1"
+                [class.bi-cash-coin]="venta.metodoPago === 'efectivo'"
+                [class.bi-credit-card]="venta.metodoPago === 'tarjeta'"
+                [class.bi-bank]="venta.metodoPago === 'transferencia'"
+                [class.bi-phone]="venta.metodoPago === 'yape' || venta.metodoPago === 'plin'"></i>
+              {{ etiquetaMetodo(venta.metodoPago) }}
+            </span>
+          </td>
+
+          <td class="columna-precio">Bs {{ venta.total | number:'1.2-2' }}</td>
+
+          <td>
+            <span class="pastilla-estado"
+              [class.pastilla-activo]="venta.estado === 'completada'"
+              [class.pastilla-inactivo]="venta.estado === 'anulada'"
+              [class.pastilla-pendiente]="venta.estado === 'pendiente'">
+              <i class="bi"
+                [class.bi-check-circle-fill]="venta.estado === 'completada'"
+                [class.bi-x-circle-fill]="venta.estado === 'anulada'"
+                [class.bi-clock-fill]="venta.estado === 'pendiente'"></i>
+              {{ venta.estado | titlecase }}
+            </span>
+          </td>
+
+          <td class="columna-proveedor">{{ venta.fechaVenta | date:'dd/MM/yyyy HH:mm' }}</td>
+
+          <td class="columna-acciones">
+            <button class="boton-accion boton-editar"
+                    (click)="abrirDetalle(venta)" title="Ver detalle">
+              <i class="bi bi-eye-fill"></i><span>Detalle</span>
+            </button>
+            <button class="boton-accion boton-desactivar"
+                    *ngIf="venta.estado === 'completada'"
+                    (click)="confirmarAnular(venta)" title="Anular">
+              <i class="bi bi-slash-circle"></i><span>Anular</span>
+            </button>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="fondo-modal" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="ventana-formulario ventana-grande" (click)="$event.stopPropagation()">
+
+      <div class="cabecera-modal">
+        <h3>
+          <i class="bi bi-plus-circle-fill"></i>
+          Nueva Venta — {{ formularioVenta.numeroVenta }}
+        </h3>
+        <button class="boton-cerrar-modal" (click)="cerrarModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cuerpo-modal">
+
+        <div class="fila-campos">
+
+          <div class="campo-formulario">
+            <div class="label-con-accion">
+              <label>Cliente</label>
+              <button class="boton-nuevo-cliente" (click)="toggleFormCliente()" type="button"
+                      [class.activo]="mostrarFormCliente">
+                <i class="bi" [class.bi-person-plus-fill]="!mostrarFormCliente"
+                              [class.bi-x-circle-fill]="mostrarFormCliente"></i>
+                {{ mostrarFormCliente ? 'Cancelar' : 'Nuevo cliente' }}
+              </button>
+            </div>
+
+            <select class="selector-clientes"
+                    *ngIf="!mostrarFormCliente"
+                    (change)="seleccionarCliente($any($event.target).value)">
+              <option value="">Cliente general (sin registro)</option>
+              <option *ngFor="let c of clientes"
+                      [value]="c.id"
+                      [selected]="formularioVenta.clienteId === c.id">
+                {{ c.nombre }} {{ c.apellido }} — {{ c.documento }}
+              </option>
+            </select>
+
+            <div class="form-cliente-rapido" *ngIf="mostrarFormCliente">
+              <div class="fila-campos-mini">
+                <div class="campo-formulario">
+                  <label>Nombre <span class="requerido">*</span></label>
+                  <input type="text" [(ngModel)]="nuevoCliente.nombre"
+                         placeholder="Nombre" [disabled]="guardandoCliente" />
+                </div>
+                <div class="campo-formulario">
+                  <label>Apellido</label>
+                  <input type="text" [(ngModel)]="nuevoCliente.apellido"
+                         placeholder="Apellido" [disabled]="guardandoCliente" />
+                </div>
+              </div>
+              <div class="fila-campos-mini">
+                <div class="campo-formulario">
+                  <label>Documento <span class="requerido">*</span></label>
+                  <input type="text" [(ngModel)]="nuevoCliente.documento"
+                         placeholder="CI / NIT" [disabled]="guardandoCliente" />
+                </div>
+                <div class="campo-formulario">
+                  <label>Teléfono</label>
+                  <input type="text" [(ngModel)]="nuevoCliente.telefono"
+                         placeholder="Teléfono" [disabled]="guardandoCliente" />
+                </div>
+              </div>
+              <div class="fila-campos-mini">
+                <div class="campo-formulario">
+                  <label>Correo</label>
+                  <input type="email" [(ngModel)]="nuevoCliente.correo"
+                         placeholder="correo@ejemplo.com" [disabled]="guardandoCliente" />
+                </div>
+                <div class="campo-formulario">
+                  <label>Dirección</label>
+                  <input type="text" [(ngModel)]="nuevoCliente.direccion"
+                         placeholder="Dirección" [disabled]="guardandoCliente" />
+                </div>
+              </div>
+
+              <div class="alerta-modal alerta-error" *ngIf="errorCliente">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorCliente }}
+              </div>
+
+              <div class="acciones-cliente-rapido">
+                <button class="boton-guardar-cliente" (click)="guardarClienteRapido()"
+                        [disabled]="guardandoCliente" type="button">
+                  <span class="spinner-border spinner-border-sm me-1" *ngIf="guardandoCliente"></span>
+                  <i class="bi bi-check-lg me-1" *ngIf="!guardandoCliente"></i>
+                  {{ guardandoCliente ? 'Guardando...' : 'Guardar cliente' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="campo-formulario">
+            <label>Método de Pago *</label>
+            <select [(ngModel)]="formularioVenta.metodoPago">
+              <option *ngFor="let m of METODOS_PAGO" [value]="m.value">{{ m.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="badge-cliente-seleccionado"
+             *ngIf="formularioVenta.clienteId && !mostrarFormCliente">
+          <i class="bi bi-person-check-fill me-1"></i>
+          {{ formularioVenta.nombreCliente }}
+        </div>
+
+        <div class="separador-seccion">
+          <span>Productos</span>
+        </div>
+
+        <div class="fila-agregar-producto">
+          <div class="campo-formulario campo-buscar-producto">
+            <label>Buscar producto</label>
+            <div class="campo-con-icono autocompletado-wrap">
+              <i class="bi bi-box-seam icono-campo"></i>
+              <!-- FIX: keyup en lugar de input para garantizar disparo en OnPush -->
+              <input type="text"
+                     [(ngModel)]="busquedaProducto"
+                     (keyup)="buscarProductos()"
+                     (input)="buscarProductos()"
+                     placeholder="Nombre o código del producto..."
+                     autocomplete="off" />
+              <div class="lista-autocompletado" *ngIf="productosFiltrados.length > 0">
+                <div class="item-autocompletado"
+                     *ngFor="let p of productosFiltrados"
+                     (mousedown)="seleccionarProducto(p)"
+                     [class.sin-stock]="p.stock === 0">
+                  <span class="item-nombre">{{ p.nombre }}</span>
+                  <span class="item-meta">
+                    <span class="item-precio">Bs {{ p.precioVenta | number:'1.2-2' }}</span>
+                    <span class="item-stock" [class.stock-cero]="p.stock === 0">
+                      Stock: {{ p.stock }}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="campo-formulario campo-cantidad">
+            <label>Cantidad</label>
+            <input type="number" [(ngModel)]="cantidadAgregar" min="1" />
+          </div>
+          <button class="boton-agregar-item" (click)="agregarDetalle()"
+                  [disabled]="!productoSeleccionado">
+            <i class="bi bi-plus-lg"></i> Agregar
+          </button>
+        </div>
+
+        <div class="tabla-detalles-wrap" *ngIf="formularioVenta.detalles.length > 0">
+          <table class="tabla-detalles">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Precio Unit.</th>
+                <th>Cantidad</th>
+                <th>Desc. %</th>
+                <th>Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of formularioVenta.detalles; let i = index">
+                <td class="td-nombre-producto">{{ d.nombreProducto }}</td>
+                <td>Bs {{ d.precioUnitario | number:'1.2-2' }}</td>
+                <td>{{ d.cantidad }}</td>
+                <td>
+                  <input type="number" class="input-descuento"
+                    [value]="d.descuento" min="0" max="100"
+                    (change)="actualizarDescuento(i, +$any($event.target).value)" />
+                </td>
+                <td class="columna-precio">Bs {{ d.subtotal | number:'1.2-2' }}</td>
+                <td>
+                  <button class="boton-quitar" (click)="quitarDetalle(i)" title="Quitar">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-totales" *ngIf="formularioVenta.detalles.length > 0">
+          <div class="fila-total">
+            <span>Subtotal</span>
+            <span>Bs {{ formularioVenta.subtotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="fila-total fila-descuento" *ngIf="formularioVenta.descuento! > 0">
+            <span>Descuento</span>
+            <span>- Bs {{ formularioVenta.descuento | number:'1.2-2' }}</span>
+          </div>
+          <div class="fila-total fila-gran-total">
+            <span>TOTAL</span>
+            <span>Bs {{ formularioVenta.total | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="campo-formulario">
+          <label>Observaciones</label>
+          <textarea [(ngModel)]="formularioVenta.observaciones"
+            placeholder="Notas adicionales sobre la venta..." rows="2"></textarea>
+        </div>
+
+        <div class="alerta-modal alerta-cargando" *ngIf="guardando">
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Registrando venta...
+        </div>
+        <div class="alerta-modal alerta-error" *ngIf="errorModal && !guardando">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorModal }}
+        </div>
+
+      </div>
+
+      <div class="pie-modal">
+        <button class="boton-cancelar" (click)="cerrarModal()" [disabled]="guardando">Cancelar</button>
+        <button class="boton-guardar" (click)="guardarVenta()" [disabled]="guardando">
+          <span class="spinner-border spinner-border-sm me-2" *ngIf="guardando"></span>
+          <i class="bi bi-check-lg me-1" *ngIf="!guardando"></i>
+          {{ guardando ? 'Registrando...' : 'Registrar Venta' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="fondo-modal" *ngIf="mostrarModalDetalle" (click)="cerrarDetalle()">
+    <div class="ventana-formulario ventana-grande" (click)="$event.stopPropagation()">
+
+      <div class="cabecera-modal">
+        <h3>
+          <i class="bi bi-receipt me-1"></i>
+          Detalle — {{ ventaDetalle?.numeroVenta }}
+        </h3>
+        <button class="boton-cerrar-modal" (click)="cerrarDetalle()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cuerpo-modal" *ngIf="ventaDetalle">
+
+        <div class="fila-campos">
+          <div class="campo-formulario">
+            <label>Cliente</label>
+            <input type="text" [value]="ventaDetalle.nombreCliente || 'Cliente general'" readonly class="campo-solo-lectura" />
+          </div>
+          <div class="campo-formulario">
+            <label>Método de Pago</label>
+            <input type="text" [value]="etiquetaMetodo(ventaDetalle.metodoPago)" readonly class="campo-solo-lectura" />
+          </div>
+          <div class="campo-formulario">
+            <label>Fecha</label>
+            <input type="text" [value]="ventaDetalle.fechaVenta | date:'dd/MM/yyyy HH:mm'" readonly class="campo-solo-lectura" />
+          </div>
+          <div class="campo-formulario">
+            <label>Estado</label>
+            <input type="text" [value]="ventaDetalle.estado | titlecase" readonly class="campo-solo-lectura" />
+          </div>
+        </div>
+
+        <div class="separador-seccion"><span>Productos vendidos</span></div>
+
+        <div class="tabla-detalles-wrap">
+          <table class="tabla-detalles">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Precio Unit.</th>
+                <th>Cantidad</th>
+                <th>Desc. %</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of ventaDetalle.detalles">
+                <td class="td-nombre-producto">{{ d.nombreProducto }}</td>
+                <td>Bs {{ d.precioUnitario | number:'1.2-2' }}</td>
+                <td>{{ d.cantidad }}</td>
+                <td>{{ d.descuento }}%</td>
+                <td class="columna-precio">Bs {{ d.subtotal | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-totales">
+          <div class="fila-total">
+            <span>Subtotal</span>
+            <span>Bs {{ ventaDetalle.subtotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="fila-total fila-descuento" *ngIf="ventaDetalle.descuento > 0">
+            <span>Descuento</span>
+            <span>- Bs {{ ventaDetalle.descuento | number:'1.2-2' }}</span>
+          </div>
+          <div class="fila-total fila-gran-total">
+            <span>TOTAL</span>
+            <span>Bs {{ ventaDetalle.total | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="campo-formulario" *ngIf="ventaDetalle.observaciones">
+          <label>Observaciones</label>
+          <textarea [value]="ventaDetalle.observaciones" readonly class="campo-solo-lectura" rows="2"></textarea>
+        </div>
+
+      </div>
+
+      <div class="pie-modal">
+        <button class="boton-cancelar" (click)="cerrarDetalle()">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="fondo-modal" *ngIf="mostrarModalAnular" (click)="cerrarModalAnular()">
+    <div class="ventana-confirmacion" (click)="$event.stopPropagation()">
+      <div class="icono-advertencia">
+        <i class="bi bi-slash-circle-fill"></i>
+      </div>
+      <h3>¿Anular venta?</h3>
+      <p>
+        ¿Estás seguro de anular la venta
+        <strong>{{ ventaAAnular?.numeroVenta }}</strong>?
+        El stock de los productos será restaurado.
+      </p>
+      <div class="alerta-modal alerta-cargando"
+           *ngIf="guardando"
+           style="margin-bottom: 16px; text-align: left;">
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Anulando venta...
+      </div>
+      <div class="botones-confirmacion">
+        <button class="boton-cancelar" (click)="cerrarModalAnular()" [disabled]="guardando">Cancelar</button>
+        <button class="boton-confirmar-eliminar" (click)="anularVenta()" [disabled]="guardando">
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="guardando"></span>
+          <span *ngIf="!guardando">Sí, anular</span>
+          <span *ngIf="guardando">Anulando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
