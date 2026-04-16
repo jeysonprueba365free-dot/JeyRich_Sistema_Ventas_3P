@@ -3,7 +3,6 @@ import { LoginComponent } from './components/login/login';
 import { DashboardComponent } from './components/dashboard/dashboard';
 import { UsuariosComponent } from './components/usuarios/usuarios';
 import { ProductosComponent } from './components/productos/productos';
-import { Proveedor } from './services/base-datos';
 import { ProveedoresComponent } from './components/provedores/provedores';
 import { VentasComponent } from './components/ventas/ventas';
 
