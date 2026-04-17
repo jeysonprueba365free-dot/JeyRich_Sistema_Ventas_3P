@@ -19,9 +19,10 @@
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
+            "baseHref": "/JeyRich_Sistema_Ventas_3P/",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
               {
                 "glob": "**/*",
                 "input": "public"
@@ -35,17 +36,17 @@
           "configurations": {
             "production": {
               "budgets": [
-                    {
-                      "type": "initial",
-                      "maximumWarning": "2mb",
-                      "maximumError": "5mb"
-                    },
-                    {
-                      "type": "anyComponentStyle",
-                      "maximumWarning": "20kb",
-                      "maximumError": "50kb"
-                    }
-                  ],
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "20kb",
+                  "maximumError": "50kb"
+                }
+              ],
               "outputHashing": "all"
             },
             "development": {
